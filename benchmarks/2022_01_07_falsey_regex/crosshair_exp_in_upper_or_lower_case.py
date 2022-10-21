@@ -1,8 +1,9 @@
-import re
 import json
+import re
 from typing import Tuple
 
-EXP_IN_UPPER_OR_LOWER_CASE = re.compile(r'''
+EXP_IN_UPPER_OR_LOWER_CASE = re.compile(
+    r"""
 \s*
 (
     null
@@ -13,7 +14,10 @@ EXP_IN_UPPER_OR_LOWER_CASE = re.compile(r'''
   | \[ \s* \]
 )
 \s*
-''', re.VERBOSE)
+""",
+    re.VERBOSE,
+)
+
 
 def test_regex_is_falsey(s: str) -> Tuple[bool, bool]:
     """
@@ -24,4 +28,3 @@ def test_regex_is_falsey(s: str) -> Tuple[bool, bool]:
         bool(json.loads(s)),
         bool(EXP_IN_UPPER_OR_LOWER_CASE.fullmatch(s)),
     )
-

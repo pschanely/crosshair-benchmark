@@ -1,8 +1,9 @@
-import re
 import json
+import re
 from typing import Tuple
 
-MISSING_NONZERO_EXP = re.compile(r'''
+MISSING_NONZERO_EXP = re.compile(
+    r"""
 \s*
 (
     null
@@ -13,7 +14,10 @@ MISSING_NONZERO_EXP = re.compile(r'''
   | \[ \s* \]
 )
 \s*
-''', re.VERBOSE)
+""",
+    re.VERBOSE,
+)
+
 
 def test_regex_is_falsey(s: str) -> Tuple[bool, bool]:
     """

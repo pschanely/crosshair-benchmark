@@ -1,16 +1,24 @@
 import argparse
-import subprocess
 import os
-from pathlib import Path
+import subprocess
 import sys
 import time
+from datetime import date
+from pathlib import Path
 
-benchmarks_dir = Path(__file__).parent.parent / "benchmarks"
+root_dir = Path(__file__).parent.parent
+benchmarks_dir = root_dir / "benchmarks"
+default_output_fname = str(
+    root_dir / ("out_baseline_" + date.today().strftime("%Y%m%d") + ".csv")
+)
 
-print(benchmarks_dir.absolute())
-parser = argparse.ArgumentParser(description='Run CrossHair benchmarks')
-parser.add_argument('-t', '--timeout', help='Maximum condition checking timeout', default=10*60)
-parser.add_argument('-o', '--output', help="Csv file for benchmark data", default="out.csv")
+parser = argparse.ArgumentParser(description="Run CrossHair benchmarks")
+parser.add_argument(
+    "-t", "--timeout", help="Maximum condition checking timeout", default=10 * 60
+)
+parser.add_argument(
+    "-o", "--output", help="Csv file for benchmark data", default=default_output_fname
+)
 args = parser.parse_args()
 
 if Path(args.output).exists():
@@ -18,8 +26,13 @@ if Path(args.output).exists():
     sys.exit(1)
 
 timings = {}
-
-basecmd = ["crosshair", "check", f"--per_condition_timeout={args.timeout}"]
+timeout = args.timeout
+basecmd = [
+    "crosshair",
+    "check",
+    f"--per_condition_timeout={timeout}",
+    f"--per_path_timeout={timeout ** 0.5}",
+]
 for benchmark_file in sorted(benchmarks_dir.glob("*/crosshair_*.py")):
     benchmark_name = "/".join(benchmark_file.parts[-2:])
     t0 = time.monotonic()
