@@ -1,3 +1,4 @@
+#def compare_version_strings(version1: str, version2: str) -> int:
 def compare_version_strings(version1, version2):
     """
     pre: isinstance(version1, str) and isinstance(version2, str)

@@ -28,6 +28,8 @@ if Path(args.output).exists():
 timings = {}
 timeout = args.timeout
 basecmd = [
+    sys.executable,
+    "-m",
     "crosshair",
     "check",
     f"--per_condition_timeout={timeout}",
