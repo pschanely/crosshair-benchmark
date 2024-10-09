@@ -14,9 +14,9 @@ class AnsiColor(enum.Enum):
 def color(text: str, *effects: AnsiColor) -> str:
     if not effects:
         return text
-    return "".join(getattr(e, "value", e) for e in effects) + text + AnsiColor.ENDC.value
+    return "".join(getattr(e, "value", str(e)) for e in effects) + text + AnsiColor.ENDC.value
 
-runs = defaultdict(dict)
+runs: dict[str, dict[str, float]] = defaultdict(dict)
 first_times = {}
 if len(sys.argv) > 1:
     filenames = sys.argv[1:]
@@ -27,9 +27,11 @@ for filename in filenames:
     with open(filename) as fh:
         run = runs[filename]
         for line in fh.readlines():
-            name, code, secs = line.split(",")
-            secs = float(secs)
-            # print(name, secs)
+            name, code, secstr = line.split(",")
+            secs = float(secstr)
+            if code not in ("0", "1"):
+                print(f"Unexpected response code ({code}) found in {name} @ {filename}")
+                secs = 999
             run[name] = secs
             if name not in first_times:
                 first_times[name] = secs
@@ -39,10 +41,10 @@ for filename in filenames:
 # print(runs.keys())
 curkeys = list(runs[list(runs.keys())[-1]].keys())
 # print(curkeys)
-
+keybuckets = set(k.split("/")[0] for k in curkeys)
 
 def date_of_file(filename: str) -> str:
-    return filename.removeprefix("out_baseline_").removesuffix(".csv")
+    return filename.removeprefix("./out_baseline_").removesuffix(".csv")
 
 def avg(samples):
     samples = [s for s in samples if not math.isnan(s)]
@@ -76,8 +78,16 @@ for name in first_times.keys():
 print()
 
 for filename in filenames:
+    bucketscores = defaultdict(list)
+    for key in curkeys:
+        bucket = key.split("/")[0]
+        bucketscores[bucket].append(runs[filename].get(key, first_times[key]))
+        # bucketscores[bucket].append((runs[filename].get(key, first_times[key]) + 1.0) ** 0.5)
     # print(filename, runs[filename])
     # print([runs[filename].get(k, first_times[k]) for k in curkeys])
-    avgtime = avg([runs[filename].get(k, first_times[k]) for k in curkeys])
+    # avgtime = avg([sum(scores)/len(scores) for scores in bucketscores.values()])
+    avgtime = avg([sum(s**0.5 for s in scores)/len(scores) for scores in bucketscores.values()])
+    # tottime = sum([ (len(scores)**0.5)*sum(scores)/len(scores) for scores in bucketscores.values()])
+    # avgtime = tottime / sum([len(scores)**0.5 for scores in bucketscores.values()])
     dt = date_of_file(filename)
-    print(f"{dt} : {avgtime}")
+    print(f"{dt}, {avgtime}")
